@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>코인 매입 신청</title>
+  <!-- 외부 라이브러리 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      margin: 0;
+      padding: 20px;
+      animation: fadeIn 1s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      padding: 40px;
+      animation: slideUp 0.8s ease-in-out;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    h2 {
+      text-align: center;
+      color: #008080;
+      margin-bottom: 30px;
+      font-size: 24px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      transition: transform 0.2s;
+    }
+    .form-group:hover {
+      transform: scale(1.02);
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #00695c;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #00bfa5;
+      box-shadow: 0 0 8px rgba(0,191,165,0.5);
+      outline: none;
+    }
+    .submit-btn {
+      margin-top: 30px;
+      padding: 16px;
+      width: 100%;
+      background: linear-gradient(90deg, #00796b, #00bfa5);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s;
+    }
+    .submit-btn:hover {
+      background: linear-gradient(90deg, #004d40, #00897b);
+      transform: translateY(-2px) scale(1.02);
+    }
+    .checkbox-label {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      margin-top: 20px;
+      color: #444;
+    }
+    .checkbox-label input {
+      margin-right: 8px;
+      width: auto;
+    }
+    .animated-icon {
+      display: inline-block;
+      margin-right: 8px;
+      animation: rotateIcon 2s linear infinite;
+    }
+    @keyframes rotateIcon {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .lang-select {
+      position: absolute;
+      right: 30px;
+      top: 30px;
+      z-index: 10;
+      background: #e0f7fa;
+      border-radius: 8px;
+      border: none;
+      padding: 6px 12px;
+      font-size: 15px;
+      color: #008080;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .star-btn {
+      background: none;
+      border: none;
+      color: #fbc02d;
+      font-size: 1.3em;
+      cursor: pointer;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+    .calendar-section {
+      margin: 30px 0 0 0;
+      background: #f5f7fa;
+      border-radius: 16px;
+      padding: 24px 18px;
+    }
+    .account-box {
+      background: #e0f7fa;
+      border-radius: 12px;
+      padding: 16px 12px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .account-box .qrcode {
+      margin-left: auto;
+    }
+    .account-copy-btn {
+      background: #00bfa5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .fee-info {
+      color: #d84315;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      background: #222;
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 24px;
+      font-size: 16px;
+      z-index: 9999;
+      opacity: 0.95;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      display: none;
+    }
+    .focus-outline:focus {
+      outline: 2px solid #1976d2 !important;
+      outline-offset: 2px;
+    }
+    @media (max-width: 600px) {
+      body { padding: 4px; }
+      .container { padding: 12px 2vw; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+      h2 { font-size: 1.1rem; margin-bottom: 18px; }
+      .form-group { margin-bottom: 12px; }
+      label { font-size: 14px; margin-bottom: 4px; }
+      input, select, textarea { font-size: 15px; padding: 9px; border-radius: 7px; }
+      .submit-btn { font-size: 15px; padding: 12px; border-radius: 8px; margin-top: 18px; }
+      .checkbox-label { font-size: 12px; margin-top: 12px; }
+      #recent-apply, #live-apply-list { font-size: 14px; padding: 0 2px; }
+      #lookup-section { padding: 12px 4px; border-radius: 10px; }
+      #lookup-section input, #lookup-section button { font-size: 14px; padding: 8px; border-radius: 7px; }
+      #lookup-section h3 { font-size: 1rem; margin-bottom: 10px; }
+      #toggle-dark { width: 38px; height: 38px; font-size: 1rem; right: 10px; bottom: 10px; }
+      .animated-icon { font-size: 1.1rem; }
+      .calendar-section { padding: 10px 2px; }
+    }
+  </style>
+</head>
+<body>
+  <select class="lang-select" id="lang-select" aria-label="언어 선택">
+    <option value="ko">한국어</option>
+    <option value="en">English</option>
+    <option value="zh">中文</option>
+  </select>
+  <div class="container">
+    <h2>
+      <span class="animated-icon">💱</span>
+      <span data-i18n="title">코인 매입 신청서</span>
+    </h2>
+    <div class="account-box" tabindex="0" aria-label="입금 계좌 정보">
+      <span data-i18n="account_info">입금 계좌: 국민은행 123456-78-901234 (예금주: 홍길동)</span>
+      <button class="account-copy-btn focus-outline" id="copy-account" aria-label="계좌 복사">복사</button>
+      <div class="qrcode" id="qrcode"></div>
+    </div>
+    <div class="form-group">
+      <label for="depositor" data-i18n="depositor">입금자명</label>
+      <input id="depositor" type="text" placeholder="입금자명을 입력하세요" autocomplete="off" class="focus-outline" aria-label="입금자명" />
+      <button class="star-btn" id="star-depositor" title="즐겨찾기">☆</button>
+    </div>
+    <div class="form-group">
+      <label for="email" data-i18n="email">이메일(선택)</label>
+      <input id="email" type="email" placeholder="이메일을 입력하세요 (신청 내역 발송)" autocomplete="off" class="focus-outline" aria-label="이메일" />
+    </div>
+    <div class="form-group">
+      <label for="amount" data-i18n="amount">입금 금액 (KRW)</label>
+      <input id="amount" type="number" placeholder="입금 금액을 입력하세요" class="focus-outline" aria-label="입금 금액" />
+      <div id="converted-amount" style="margin-top:6px; color:#1976d2; font-size:15px; font-weight:500;"></div>
+    </div>
+    <div class="form-group">
+      <label for="coin-type" data-i18n="coin_type">받을 코인 종류</label>
+      <select id="coin-type" class="focus-outline" aria-label="코인 종류">
+        <option value="">선택하세요</option>
+        <option value="USDT">USDT</option>
+        <option value="BTC">BTC</option>
+        <option value="ETH">ETH</option>
+      </select>
+    </div>
+    <div id="exchange-rate-info" style="margin-bottom:8px; color:#008080; font-weight:bold;"></div>
+    <div class="fee-info" id="fee-info"></div>
+    <div class="form-group">
+      <label for="network" data-i18n="network">네트워크 선택</label>
+      <select id="network" class="focus-outline" aria-label="네트워크">
+        <option value="">선택하세요</option>
+        <option value="TRC20">TRC20 (트론 기반)</option>
+        <option value="ERC20">ERC20 (이더리움 기반)</option>
+        <option value="BEP20">BEP20 (바이낸스 스마트체인)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="wallet" data-i18n="wallet">코인 지갑 주소</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input id="wallet" type="text" placeholder="코인 지갑 주소를 입력하세요" style="flex:1;" class="focus-outline" aria-label="지갑 주소" />
+        <button type="button" id="copy-wallet" style="padding:8px 12px; font-size:14px; border-radius:8px; border:none; background:#e0f7fa; color:#008080; cursor:pointer;" aria-label="지갑주소 복사">복사</button>
+        <button class="star-btn" id="star-wallet" title="즐겨찾기">☆</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="memo" data-i18n="memo">메모/비고 (선택)</label>
+      <textarea id="memo" rows="2" placeholder="전달사항이 있다면 입력하세요" class="focus-outline" aria-label="메모"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="phone">휴대폰 번호</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input id="phone" type="tel" placeholder="휴대폰 번호 입력 ('-' 없이)" maxlength="11" class="focus-outline" aria-label="휴대폰 번호" style="flex:1;" />
+        <button type="button" id="sms-send" style="padding:8px 12px; font-size:14px; border-radius:8px; border:none; background:#e0f7fa; color:#008080; cursor:pointer;">인증요청</button>
+      </div>
+    </div>
+    <div class="form-group" id="sms-code-group" style="display:none;">
+      <label for="sms-code">인증번호</label>
+      <input id="sms-code" type="text" maxlength="6" placeholder="인증번호 입력" class="focus-outline" aria-label="인증번호" />
+      <button type="button" id="sms-verify" style="margin-top:6px; padding:8px 12px; font-size:14px; border-radius:8px; border:none; background:#e0f7fa; color:#008080; cursor:pointer;">인증확인</button>
+      <span id="sms-status" style="margin-left:10px; color:#388e3c;"></span>
+    </div>
+    <div class="form-group">
+      <label for="file">영수증/첨부파일 (선택)</label>
+      <input id="file" type="file" accept="image/*" class="focus-outline" aria-label="영수증 첨부" />
+      <img id="file-preview" style="display:none; margin-top:8px; max-width:180px; border-radius:8px;" />
+    </div>
+    <button class="submit-btn focus-outline" aria-label="코인 매입 신청 완료"><span data-i18n="submit">🚀 코인 매입 신청 완료</span></button>
+    <label class="checkbox-label">
+      <input type="checkbox" checked aria-label="개인정보처리방침 동의" />
+      <span data-i18n="privacy">개인정보처리방침 동의 (내용보기)</span>
+    </label>
+    <div id="recent-apply" style="margin-top:32px;"></div>
+    <div id="live-apply-list" style="margin-top:36px;"></div>
+    <hr style="margin:40px 0 24px 0; border:0; border-top:1px solid #e0e0e0;">
+    <div id="lookup-section" style="background:#f5f7fa; border-radius:16px; padding:24px 18px; max-width:480px; margin:0 auto 32px auto;">
+      <h3 style="color:#008080; margin-bottom:16px;" data-i18n="lookup_title">신청 내역 조회</h3>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+        <input id="lookup-depositor" placeholder="입금자명" style="flex:1; padding:10px; border-radius:8px; border:1px solid #bbb; font-size:15px;" class="focus-outline" aria-label="조회 입금자명" />
+        <input id="lookup-wallet" placeholder="지갑주소" style="flex:2; padding:10px; border-radius:8px; border:1px solid #bbb; font-size:15px;" class="focus-outline" aria-label="조회 지갑주소" />
+        <button id="lookup-btn" style="padding:10px 18px; border-radius:8px; background:#00bfa5; color:#fff; font-weight:700; border:none; cursor:pointer;" class="focus-outline" aria-label="조회">조회</button>
+      </div>
+      <div id="lookup-result"></div>
+      <button id="download-csv" style="margin-top:10px; padding:8px 16px; border-radius:8px; background:#1976d2; color:#fff; border:none; font-size:14px; cursor:pointer;">CSV 다운로드</button>
+      <button id="download-xlsx" style="margin-top:10px; margin-left:8px; padding:8px 16px; border-radius:8px; background:#388e3c; color:#fff; border:none; font-size:14px; cursor:pointer;">엑셀 다운로드</button>
+    </div>
+    <div class="calendar-section">
+      <h3 style="color:#008080; margin-bottom:12px;" data-i18n="calendar_title">신청 내역 캘린더</h3>
+      <div id="calendar"></div>
+    </div>
+    <div id="stats-section" style="margin:40px 0 0 0; background:#f5f7fa; border-radius:16px; padding:24px 18px;">
+      <h3 style="color:#008080; margin-bottom:12px;">통계/랭킹</h3>
+      <div style="display:flex; flex-wrap:wrap; gap:24px;">
+        <div style="flex:1; min-width:220px;">
+          <canvas id="chart-day" height="120"></canvas>
+        </div>
+        <div style="flex:1; min-width:220px;">
+          <canvas id="chart-coin" height="120"></canvas>
+        </div>
+        <div style="flex:1; min-width:220px;">
+          <div id="ranking-list"></div>
+        </div>
+      </div>
+    </div>
+    <div id="filter-section" style="margin:32px 0 0 0; background:#f5f7fa; border-radius:16px; padding:18px 14px;">
+      <h3 style="color:#008080; margin-bottom:10px;">고급 필터</h3>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input id="filter-min-amount" type="number" placeholder="최소금액" style="flex:1;" />
+        <input id="filter-max-amount" type="number" placeholder="최대금액" style="flex:1;" />
+        <input id="filter-from" type="date" style="flex:1;" />
+        <input id="filter-to" type="date" style="flex:1;" />
+        <select id="filter-status" style="flex:1;">
+          <option value="">상태 전체</option>
+          <option value="신청">신청</option>
+          <option value="완료">완료</option>
+          <option value="취소">취소</option>
+        </select>
+        <select id="filter-coin" style="flex:1;">
+          <option value="">코인 전체</option>
+          <option value="USDT">USDT</option>
+          <option value="BTC">BTC</option>
+          <option value="ETH">ETH</option>
+        </select>
+        <button id="filter-btn" style="padding:8px 16px; border-radius:8px; background:#1976d2; color:#fff; border:none; font-size:14px; cursor:pointer;">필터 적용</button>
+      </div>
+    </div>
+    <div id="admin-section" style="margin:32px 0 0 0; background:#f5f7fa; border-radius:16px; padding:18px 14px;">
+      <h3 style="color:#008080; margin-bottom:10px;">관리자 인증</h3>
+      <input id="admin-token" type="text" placeholder="관리자 토큰 입력" style="width:60%; padding:8px; border-radius:8px; border:1px solid #bbb; font-size:15px;" />
+      <button id="admin-login" style="padding:8px 16px; border-radius:8px; background:#388e3c; color:#fff; border:none; font-size:14px; cursor:pointer;">로그인</button>
+      <span id="admin-status" style="margin-left:10px; color:#388e3c;"></span>
+    </div>
+    <button id="toggle-dark" style="position:fixed; right:24px; bottom:24px; z-index:100; background:#222; color:#fff; border:none; border-radius:50%; width:48px; height:48px; font-size:1.3rem; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.12);">🌙</button>
+    <div class="toast" id="toast"></div>
+  </div>
+  <!-- 외부 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/i18next@21.6.16/dist/umd/i18next.min.js"></script>
+  <script>
+    // -------------------- 상태 변수 --------------------
+    let lastRate = null;
+    const depositorInput = document.getElementById('depositor');
+    const amountInput = document.getElementById('amount');
+    const coinTypeInput = document.getElementById('coin-type');
+    const networkInput = document.getElementById('network');
+    const walletInput = document.getElementById('wallet');
+
+    // -------------------- 함수 정의 --------------------
+    function getDepositorList() {
+      return JSON.parse(localStorage.getItem('depositors') || '[]');
+    }
+    function saveDepositor(name) {
+      let list = getDepositorList();
+      if (!list.includes(name)) {
+        list.push(name);
+        localStorage.setItem('depositors', JSON.stringify(list));
+      }
+    }
+    function saveTemp() {
+      localStorage.setItem('apply-temp', JSON.stringify({
+        depositor: depositorInput.value,
+        amount: amountInput.value,
+        coinType: coinTypeInput.value,
+        network: networkInput.value,
+        wallet: walletInput.value
+      }));
+    }
+    function loadTemp() {
+      const temp = JSON.parse(localStorage.getItem('apply-temp') || '{}');
+      if (temp.depositor) depositorInput.value = temp.depositor;
+      if (temp.amount) amountInput.value = temp.amount;
+      if (temp.coinType) coinTypeInput.value = temp.coinType;
+      if (temp.network) networkInput.value = temp.network;
+      if (temp.wallet) walletInput.value = temp.wallet;
+      updateExchangeRate();
+      updateConvertedAmount();
+    }
+    function isWalletValid(addr) {
+      return addr && addr.length >= 10 && !/\s/.test(addr);
+    }
+    function showRecentApply(data) {
+      const div = document.getElementById('recent-apply');
+      if (!data) { div.innerHTML = ''; return; }
+      div.innerHTML = `<div style="background:#e0f7fa;padding:18px 16px;border-radius:12px;margin-top:12px;">
+        <b>최근 신청 내역</b><br>
+        입금자명: ${data.depositor}<br>
+        금액: ${parseFloat(data.amount).toLocaleString()} KRW<br>
+        코인: ${data.coinType}<br>
+        네트워크: ${data.network}<br>
+        지갑주소: ${data.wallet}
+      </div>`;
+    }
+    async function updateExchangeRate() {
+      const coin = coinTypeInput.value;
+      const infoDiv = document.getElementById('exchange-rate-info');
+      if (!coin) {
+        infoDiv.textContent = '';
+        lastRate = null;
+        updateConvertedAmount();
+        return;
+      }
+      infoDiv.textContent = '환율 정보를 불러오는 중...';
+      try {
+        const res = await fetch(`https://api.exchangerate.host/convert?from=KRW&to=${coin}`);
+        const data = await res.json();
+        if (data.success && data.info && data.result) {
+          infoDiv.textContent = `1 ${coin} ≈ ${(1/data.result).toLocaleString(undefined, {maximumFractionDigits: 2})} KRW`;
+          lastRate = data.result;
+        } else {
+          infoDiv.textContent = '환율 정보를 불러올 수 없습니다.';
+          lastRate = null;
+        }
+      } catch {
+        infoDiv.textContent = '환율 정보를 불러올 수 없습니다.';
+        lastRate = null;
+      }
+      updateConvertedAmount();
+    }
+    function updateConvertedAmount() {
+      const amount = parseFloat(amountInput.value);
+      const coin = coinTypeInput.value;
+      const div = document.getElementById('converted-amount');
+      if (!lastRate || !amount || !coin) {
+        div.textContent = '';
+        return;
+      }
+      const coinAmount = amount / lastRate;
+      div.textContent = `${amount.toLocaleString()} KRW ≈ ${coinAmount.toLocaleString(undefined, {maximumFractionDigits: 6})} ${coin}`;
+    }
+    async function fetchLiveApplyList() {
+      try {
+        const res = await fetch('http://localhost:3000/api/apply');
+        const data = await res.json();
+        const recent = data.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,7);
+        document.getElementById('live-apply-list').innerHTML =
+          `<div style="background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06); padding:14px 10px;">
+            <b style="color:#008080;">실시간 최근 신청 내역</b>
+            <ul style="margin:10px 0 0 0; padding:0; list-style:none;">
+              ${recent.map(x=>`<li style="margin-bottom:6px;">
+                <span style="color:#1976d2; font-weight:600;">${x.depositor}</span> 
+                <span style="color:#888;">${parseFloat(x.amount).toLocaleString()} KRW</span> 
+                <span style="color:#008080;">${x.coinType}</span>
+                <span style="color:#aaa; font-size:13px;">(${new Date(x.createdAt).toLocaleTimeString()})</span>
+              </li>`).join('')}
+            </ul>
+          </div>`;
+      } catch {}
+    }
+
+    // -------------------- 이벤트 바인딩 --------------------
+    document.querySelector('.submit-btn').addEventListener('click', async function(e) {
+      e.preventDefault();
+      const depositor = depositorInput.value.trim();
+      const amount = amountInput.value.trim();
+      const coinType = coinTypeInput.value;
+      const network = networkInput.value;
+      const wallet = walletInput.value.trim();
+      if (!depositor || !amount || !coinType || !network || !wallet) {
+        alert('모든 항목을 입력해 주세요.');
+        return;
+      }
+      if (!isWalletValid(wallet)) {
+        alert('코인 지갑 주소를 정확히 입력해 주세요.');
+        walletInput.focus();
+        return;
+      }
+      try {
+        const res = await fetch('http://localhost:3000/api/apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ depositor, amount, coinType, network, wallet })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('신청이 정상적으로 접수되었습니다!');
+          saveDepositor(depositor);
+          showRecentApply({depositor, amount, coinType, network, wallet});
+          depositorInput.value = '';
+          amountInput.value = '';
+          coinTypeInput.value = '';
+          networkInput.value = '';
+          walletInput.value = '';
+          localStorage.removeItem('apply-temp');
+          updateExchangeRate();
+          updateConvertedAmount();
+          window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+        } else {
+          alert(data.error || '신청에 실패했습니다.');
+        }
+      } catch (e) {
+        console.error('신청 오류:', e);
+        alert('서버와 통신 중 오류가 발생했습니다.');
+      }
+    });
+    coinTypeInput.addEventListener('change', updateExchangeRate);
+    amountInput.addEventListener('input', updateConvertedAmount);
+    document.getElementById('copy-wallet').addEventListener('click', async function() {
+      const wallet = document.getElementById('wallet');
+      try {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(wallet.value);
+        } else {
+          wallet.select();
+          wallet.setSelectionRange(0, 99999);
+          document.execCommand('copy');
+        }
+        this.textContent = '복사됨!';
+        setTimeout(() => { this.textContent = '복사'; }, 1200);
+      } catch {
+        alert('복사 기능이 지원되지 않는 브라우저입니다.');
+      }
+    });
+    depositorInput.addEventListener('input', function() {
+      const val = this.value.trim();
+      const list = getDepositorList().filter(x => x.includes(val) && x);
+      let datalist = document.getElementById('depositor-list');
+      if (!datalist) {
+        datalist = document.createElement('datalist');
+        datalist.id = 'depositor-list';
+        this.setAttribute('list', 'depositor-list');
+        document.body.appendChild(datalist);
+      }
+      datalist.innerHTML = list.map(x => `<option value="${x}">`).join('');
+    });
+    [depositorInput, amountInput, coinTypeInput, networkInput, walletInput].forEach(el => {
+      el.addEventListener('input', saveTemp);
+    });
+    document.getElementById('lookup-btn').addEventListener('click', async function() {
+      const depositor = document.getElementById('lookup-depositor').value.trim();
+      const wallet = document.getElementById('lookup-wallet').value.trim();
+      const resultDiv = document.getElementById('lookup-result');
+      if (!depositor || !wallet) {
+        resultDiv.innerHTML = '<span style="color:#e53935;">입금자명과 지갑주소를 모두 입력하세요.</span>';
+        return;
+      }
+      resultDiv.innerHTML = '조회 중...';
+      try {
+        const res = await fetch('http://localhost:3000/api/apply');
+        const data = await res.json();
+        const found = data.filter(x => x.depositor === depositor && x.wallet === wallet);
+        if (!found.length) {
+          resultDiv.innerHTML = '<span style="color:#e53935;">일치하는 신청 내역이 없습니다.</span>';
+        } else {
+          resultDiv.innerHTML = found.map(x => `
+            <div class="lookup-item" style="background:#fff; border-radius:10px; padding:16px 12px; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+              <b>입금자명:</b> ${x.depositor}<br>
+              <b>금액:</b> ${parseFloat(x.amount).toLocaleString()} KRW<br>
+              <b>코인:</b> ${x.coinType}<br>
+              <b>네트워크:</b> ${x.network}<br>
+              <b>지갑주소:</b> ${x.wallet}<br>
+              <b>신청일시:</b> ${new Date(x.createdAt).toLocaleString()}<br>
+              <b>상태:</b> <span style="font-weight:bold; color:${x.status==='완료'?'#388e3c':x.status==='처리중'?'#fbc02d':'#00796b'}">${x.status}</span>
+              <br><button class="pdf-btn" style="margin-top:8px; padding:6px 14px; border-radius:7px; background:#1976d2; color:#fff; border:none; font-size:14px; cursor:pointer;">PDF 저장</button>
+            </div>
+          `).join('');
+        }
+      } catch {
+        resultDiv.innerHTML = '<span style="color:#e53935;">서버 오류. 잠시 후 다시 시도하세요.</span>';
+      }
+    });
+    document.getElementById('lookup-result').addEventListener('click', async function(e) {
+      if (e.target && e.target.classList.contains('pdf-btn')) {
+        const div = e.target.closest('.lookup-item');
+        await downloadPDF(div);
+      }
+    });
+    window.downloadPDF = async function(div) {
+      const html2canvas = await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm');
+      const jsPDF = await import('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/+esm');
+      const canvas = await html2canvas.default(div);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF.default();
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+      pdf.save('coin_apply.pdf');
+    }
+    networkInput.addEventListener('change', function() {
+      let msg = '';
+      if (this.value === 'TRC20') msg = 'TRC20(트론) 지갑주소는 T로 시작합니다.';
+      if (this.value === 'ERC20') msg = 'ERC20(이더리움) 지갑주소는 0x로 시작합니다.';
+      if (this.value === 'BEP20') msg = 'BEP20(바이낸스) 지갑주소는 0x로 시작합니다.';
+      let guide = document.getElementById('network-guide');
+      if (!guide) {
+        guide = document.createElement('div');
+        guide.id = 'network-guide';
+        guide.style = 'margin-top:6px; color:#1976d2; font-size:14px;';
+        this.parentNode.appendChild(guide);
+      }
+      guide.textContent = msg;
+    });
+    document.getElementById('toggle-dark').addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      if (document.body.classList.contains('dark')) {
+        this.textContent = '☀️';
+        document.body.style.background = '#23272f';
+        document.querySelector('.container').style.background = '#23272f';
+        document.querySelector('.container').style.color = '#eee';
+      } else {
+        this.textContent = '🌙';
+        document.body.style.background = '';
+        document.querySelector('.container').style.background = '#fff';
+        document.querySelector('.container').style.color = '';
+      }
+    });
+    setInterval(fetchLiveApplyList, 5000);
+    fetchLiveApplyList();
+    loadTemp();
+    updateExchangeRate();
+    updateConvertedAmount();
+  </script>
+</body>
+</html>

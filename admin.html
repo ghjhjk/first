@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>코인 매입 신청 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 0;
+    }
+    .dashboard-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 16px 40px 16px;
+    }
+    h2 {
+      text-align: left;
+      color: #008080;
+      margin-bottom: 24px;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .summary-cards {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+    .card {
+      flex: 1 1 180px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      padding: 28px 20px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 180px;
+      min-height: 100px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card .icon {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      opacity: 0.18;
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      pointer-events: none;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      color: #008080;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .card-value {
+      font-size: 2.1rem;
+      font-weight: 900;
+      color: #222;
+      letter-spacing: -2px;
+    }
+    .card-value.status-신청 { color: #00796b; }
+    .card-value.status-처리중 { color: #fbc02d; }
+    .card-value.status-완료 { color: #388e3c; }
+    .card-value.status-오늘 { color: #1976d2; }
+    .table-section {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      padding: 28px 16px 24px 16px;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .filter-bar input, .filter-bar select {
+      padding: 7px 10px;
+      border-radius: 7px;
+      border: 1px solid #bbb;
+      font-size: 15px;
+    }
+    .filter-bar label {
+      font-size: 15px;
+      color: #008080;
+      font-weight: 600;
+      margin-right: 2px;
+    }
+    .filter-bar button {
+      background: linear-gradient(90deg, #00bfa5, #00897b);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 7px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .filter-bar button:hover {
+      background: linear-gradient(90deg, #00897b, #00bfa5);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .chart-section {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      padding: 24px 16px 8px 16px;
+      margin-bottom: 32px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: transparent;
+      margin-top: 8px;
+    }
+    th, td {
+      padding: 12px 8px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+      font-size: 1rem;
+    }
+    th {
+      background: #e0f7fa;
+      color: #00695c;
+      font-weight: 700;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    select, button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+    }
+    button {
+      background: linear-gradient(90deg, #00bfa5, #00897b);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      margin-left: 4px;
+      transition: background 0.2s, transform 0.2s;
+      font-weight: 700;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #00897b, #00bfa5);
+      transform: translateY(-2px) scale(1.04);
+    }
+    .status {
+      font-weight: bold;
+      font-size: 1.05em;
+    }
+    .status-신청 { color: #00796b; }
+    .status-처리중 { color: #fbc02d; }
+    .status-완료 { color: #388e3c; }
+    .delete-btn {
+      background: #e57373;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-left: 0;
+      margin-right: 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .delete-btn:hover {
+      background: #c62828;
+    }
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .pagination button {
+      background: #e0f7fa;
+      color: #008080;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .pagination button.active {
+      background: #00bfa5;
+      color: #fff;
+    }
+    .modal-bg {
+      position: fixed;
+      left: 0; top: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.25);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      padding: 32px 24px 24px 24px;
+      min-width: 320px;
+      max-width: 90vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      right: 18px;
+      top: 12px;
+      font-size: 1.5rem;
+      color: #888;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    @media (max-width: 900px) {
+      .summary-cards { flex-direction: column; gap: 16px; }
+      .dashboard-container { padding: 16px 2vw; }
+    }
+    @media (max-width: 600px) {
+      .table-section, .dashboard-container { padding: 4px 0; }
+      th, td { font-size: 0.95rem; padding: 7px 2px; }
+      .card { min-width: 120px; padding: 18px 8px 12px 16px; }
+      h2 { font-size: 1.2rem; }
+      .modal { padding: 18px 6px 12px 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <h2>코인 매입 신청 대시보드</h2>
+    <div class="summary-cards" id="summary-cards"></div>
+    <div class="chart-section">
+      <canvas id="statusChart" height="60"></canvas>
+      <canvas id="dateChart" height="60" style="margin-top:24px;"></canvas>
+    </div>
+    <div class="table-section">
+      <div class="filter-bar">
+        <label>입금자명</label><input id="filter-depositor" placeholder="입금자명" />
+        <label>상태</label><select id="filter-status"><option value="">전체</option><option>신청</option><option>처리중</option><option>완료</option></select>
+        <label>코인</label><select id="filter-coin"><option value="">전체</option><option>USDT</option><option>BTC</option><option>ETH</option></select>
+        <label>날짜</label><input id="filter-date" type="date" />
+        <button id="download-csv">엑셀 다운로드</button>
+      </div>
+      <div id="table-container">로딩 중...</div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+  <div id="modal-root"></div>
+  <script>
+    // -------------------- 상태 변수 및 DOM --------------------
+    let allData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    const PAGE_SIZE = 10;
+    const filterDepositor = document.getElementById('filter-depositor');
+    const filterStatus = document.getElementById('filter-status');
+    const filterCoin = document.getElementById('filter-coin');
+    const filterDate = document.getElementById('filter-date');
+
+    // -------------------- 데이터 fetch --------------------
+    async function fetchData() {
+      const res = await fetch('http://localhost:3000/api/apply');
+      return await res.json();
+    }
+
+    // -------------------- 필터링 --------------------
+    function applyFilter() {
+      let data = allData;
+      if (filterDepositor.value.trim()) {
+        data = data.filter(x => x.depositor && x.depositor.includes(filterDepositor.value.trim()));
+      }
+      if (filterStatus.value) {
+        data = data.filter(x => x.status === filterStatus.value);
+      }
+      if (filterCoin.value) {
+        data = data.filter(x => x.coinType === filterCoin.value);
+      }
+      if (filterDate.value) {
+        data = data.filter(x => x.createdAt && x.createdAt.slice(0,10) === filterDate.value);
+      }
+      filteredData = data;
+      currentPage = 1;
+      renderTable();
+      renderPagination();
+      renderCharts();
+    }
+    [filterDepositor, filterStatus, filterCoin, filterDate].forEach(el => el.addEventListener('input', applyFilter));
+
+    // -------------------- 요약 카드 --------------------
+    function getTodayString() {
+      const now = new Date();
+      return now.toISOString().slice(0, 10);
+    }
+    function countSummary(data) {
+      const today = getTodayString();
+      let total = data.length;
+      let 신청 = 0, 처리중 = 0, 완료 = 0, 오늘 = 0;
+      data.forEach(item => {
+        if (item.status === '신청') 신청++;
+        if (item.status === '처리중') 처리중++;
+        if (item.status === '완료') 완료++;
+        if (item.createdAt && item.createdAt.slice(0,10) === today) 오늘++;
+      });
+      return { total, 신청, 처리중, 완료, 오늘 };
+    }
+    function renderSummaryCards(summary) {
+      document.getElementById('summary-cards').innerHTML = `
+        <div class="card"><span class="icon">📋</span><div class="card-title">전체 신청</div><div class="card-value">${summary.total}</div></div>
+        <div class="card"><span class="icon">🟢</span><div class="card-title">신청</div><div class="card-value status-신청">${summary.신청}</div></div>
+        <div class="card"><span class="icon">🟡</span><div class="card-title">처리중</div><div class="card-value status-처리중">${summary.처리중}</div></div>
+        <div class="card"><span class="icon">✅</span><div class="card-title">완료</div><div class="card-value status-완료">${summary.완료}</div></div>
+        <div class="card"><span class="icon">📅</span><div class="card-title">오늘 신청</div><div class="card-value status-오늘">${summary.오늘}</div></div>
+      `;
+    }
+
+    // -------------------- 테이블 렌더링 --------------------
+    function statusClass(status) {
+      return 'status status-' + status;
+    }
+    function makeRow(entry, idx) {
+      return `<tr data-idx="${idx}">
+        <td>${entry.depositor}</td>
+        <td>${entry.amount}</td>
+        <td>${entry.coinType}</td>
+        <td>${entry.network}</td>
+        <td>${entry.wallet}</td>
+        <td>${new Date(entry.createdAt).toLocaleString()}</td>
+        <td><span class="${statusClass(entry.status)}">${entry.status}</span></td>
+        <td>
+          <select class="status-select">
+            <option value="신청" ${entry.status==='신청'?'selected':''}>신청</option>
+            <option value="처리중" ${entry.status==='처리중'?'selected':''}>처리중</option>
+            <option value="완료" ${entry.status==='완료'?'selected':''}>완료</option>
+          </select>
+          <button class="save-btn">저장</button>
+          <button class="delete-btn">삭제</button>
+        </td>
+      </tr>`;
+    }
+    function renderTable() {
+      const data = filteredData;
+      if (!data.length) {
+        document.getElementById('table-container').innerHTML = '<p>신청 내역이 없습니다.</p>';
+        return;
+      }
+      const start = (currentPage-1)*PAGE_SIZE;
+      const end = start+PAGE_SIZE;
+      let html = `<table><thead><tr>
+        <th>입금자명</th><th>금액</th><th>코인</th><th>네트워크</th><th>지갑주소</th><th>신청일시</th><th>상태</th><th>상태변경/삭제</th>
+      </tr></thead><tbody>`;
+      html += data.slice(start, end).map(makeRow).join('');
+      html += '</tbody></table>';
+      document.getElementById('table-container').innerHTML = html;
+    }
+
+    // -------------------- 테이블 이벤트 위임 --------------------
+    document.getElementById('table-container').addEventListener('click', async function(e) {
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      const idx = tr.getAttribute('data-idx');
+      const entry = filteredData[idx];
+      // 상세 모달 (행 클릭, 버튼/셀렉트 제외)
+      if (e.target.tagName === 'TD') {
+        showModal(entry);
+      }
+      // 상태 저장
+      if (e.target.classList.contains('save-btn')) {
+        const select = tr.querySelector('.status-select');
+        const status = select.value;
+        e.target.disabled = true;
+        try {
+          const res = await fetch(`http://localhost:3000/api/apply/${entry.id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('상태가 변경되었습니다.');
+            allData = await fetchData();
+            applyFilter();
+          } else {
+            alert(data.error || '상태 변경 실패');
+          }
+        } catch {
+          alert('서버 오류');
+        }
+        e.target.disabled = false;
+      }
+      // 삭제
+      if (e.target.classList.contains('delete-btn')) {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        e.target.disabled = true;
+        try {
+          const res = await fetch(`http://localhost:3000/api/apply/${entry.id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            alert('삭제되었습니다.');
+            allData = await fetchData();
+            applyFilter();
+          } else {
+            alert(data.error || '삭제 실패');
+          }
+        } catch {
+          alert('서버 오류');
+        }
+        e.target.disabled = false;
+      }
+    });
+    // 상세 모달 (행 클릭)
+    document.getElementById('table-container').addEventListener('dblclick', function(e) {
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      const idx = tr.getAttribute('data-idx');
+      showModal(filteredData[idx]);
+    });
+
+    // -------------------- 페이지네이션 --------------------
+    function renderPagination() {
+      const total = filteredData.length;
+      const pageCount = Math.ceil(total/PAGE_SIZE);
+      let html = '';
+      for (let i=1; i<=pageCount; i++) {
+        html += `<button class="${i===currentPage?'active':''}" data-page="${i}">${i}</button>`;
+      }
+      document.getElementById('pagination').innerHTML = html;
+    }
+    document.getElementById('pagination').addEventListener('click', function(e) {
+      if (e.target.tagName === 'BUTTON') {
+        currentPage = parseInt(e.target.getAttribute('data-page'));
+        renderTable();
+        renderPagination();
+      }
+    });
+
+    // -------------------- 상세 모달 --------------------
+    function showModal(entry) {
+      const root = document.getElementById('modal-root');
+      root.innerHTML = `<div class="modal-bg" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+          <span class="modal-close" onclick="closeModal(event)">&times;</span>
+          <h3 style="color:#008080; margin-bottom:18px;">신청 상세 정보</h3>
+          <div style="line-height:2;">
+            <b>입금자명:</b> ${entry.depositor}<br>
+            <b>입금 금액:</b> ${parseFloat(entry.amount).toLocaleString()} KRW<br>
+            <b>코인 종류:</b> ${entry.coinType}<br>
+            <b>네트워크:</b> ${entry.network}<br>
+            <b>지갑 주소:</b> ${entry.wallet}<br>
+            <b>신청일시:</b> ${new Date(entry.createdAt).toLocaleString()}<br>
+            <b>상태:</b> <span class="${statusClass(entry.status)}">${entry.status}</span>
+          </div>
+        </div>
+      </div>`;
+    }
+    window.closeModal = function(e) {
+      if (e) e.stopPropagation();
+      document.getElementById('modal-root').innerHTML = '';
+    }
+
+    // -------------------- CSV 다운로드 --------------------
+    document.getElementById('download-csv').addEventListener('click', function() {
+      let csv = '입금자명,금액,코인,네트워크,지갑주소,신청일시,상태\n';
+      filteredData.forEach(entry => {
+        csv += `${entry.depositor},${entry.amount},${entry.coinType},${entry.network},${entry.wallet},${new Date(entry.createdAt).toLocaleString()},${entry.status}\n`;
+      });
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'coin_apply_list.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // -------------------- Chart.js 그래프 --------------------
+    let statusChart, dateChart;
+    function renderCharts() {
+      // 상태별
+      const statusCount = { '신청':0, '처리중':0, '완료':0 };
+      filteredData.forEach(x => { if (statusCount[x.status] !== undefined) statusCount[x.status]++; });
+      const ctx1 = document.getElementById('statusChart').getContext('2d');
+      if (statusChart) statusChart.destroy();
+      statusChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['신청', '처리중', '완료'],
+          datasets: [{
+            label: '상태별 신청 건수',
+            data: [statusCount['신청'], statusCount['처리중'], statusCount['완료']],
+            backgroundColor: ['#00796b','#fbc02d','#388e3c']
+          }]
+        },
+        options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+      });
+      // 일별
+      const dateMap = {};
+      filteredData.forEach(x => {
+        const d = x.createdAt ? x.createdAt.slice(0,10) : '기타';
+        dateMap[d] = (dateMap[d]||0)+1;
+      });
+      const dateLabels = Object.keys(dateMap).sort();
+      const dateVals = dateLabels.map(d=>dateMap[d]);
+      const ctx2 = document.getElementById('dateChart').getContext('2d');
+      if (dateChart) dateChart.destroy();
+      dateChart = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: dateLabels,
+          datasets: [{
+            label: '일별 신청 건수',
+            data: dateVals,
+            backgroundColor: '#1976d2'
+          }]
+        },
+        options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+      });
+    }
+
+    // -------------------- 데이터 최초 로드 --------------------
+    async function init() {
+      allData = await fetchData();
+      filteredData = allData;
+      renderSummaryCards(countSummary(allData));
+      applyFilter();
+    }
+    init();
+  </script>
+</body>
+</html> 
